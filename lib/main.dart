@@ -17,6 +17,8 @@ void main() async {
   Hive.registerAdapter(AnotacaoAdapter());
   Hive.registerAdapter(ReviewAdapter());
 
+  // Abre box de configurações para evitar flicker ao aplicar o tema salvoawait Hive.openBox('app_settings');
+
   runApp(
     MultiProvider(
       providers: [
