@@ -18,41 +18,49 @@ class BookRepository extends ChangeNotifier {
     _init();
   }
 
+  Future<Box<Livro>> _openBox() async {
+    if (Hive.isBoxOpen(boxName)) {
+      return Hive.box<Livro>(boxName);
+    }
+    return await Hive.openBox<Livro>(boxName);
+  }
+
   Future<void> _init() async {
     try {
-      final box = await Hive.openBox<Livro>(boxName);
+      final box = await _openBox();
       _books = box.values.toList();
+    } catch (e, st) {
+      debugPrint('Erro ao inicializar BookRepository: $e\n$st');
+      _books = [];
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // CRUD Livro
   Future<void> addLivro(Livro livro) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     await box.put(livro.id, livro);
     _books = box.values.toList();
     notifyListeners();
   }
 
   Future<void> updateLivro(Livro livro) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     await box.put(livro.id, livro);
     _books = box.values.toList();
     notifyListeners();
   }
 
   Future<void> removeLivro(String livroId) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     await box.delete(livroId);
     _books = box.values.toList();
     notifyListeners();
   }
 
-  // Anotações
   Future<void> addAnotacao(String livroId, Anotacao anotacao) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     final livro = box.get(livroId);
     if (livro == null) return;
     livro.anotacoes = (livro.anotacoes ?? [])..add(anotacao);
@@ -62,7 +70,7 @@ class BookRepository extends ChangeNotifier {
   }
 
   Future<void> updateAnotacao(String livroId, Anotacao anotacao) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     final livro = box.get(livroId);
     if (livro == null) return;
     final idx = livro.anotacoes.indexWhere((a) => a.id == anotacao.id);
@@ -75,7 +83,7 @@ class BookRepository extends ChangeNotifier {
   }
 
   Future<void> removeAnotacao(String livroId, String anotacaoId) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     final livro = box.get(livroId);
     if (livro == null) return;
     livro.anotacoes?.removeWhere((a) => a.id == anotacaoId);
@@ -84,9 +92,8 @@ class BookRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Avaliações
   Future<void> addReview(String livroId, Review review) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     final livro = box.get(livroId);
     if (livro == null) return;
     livro.avaliacoes = (livro.avaliacoes ?? [])..add(review);
@@ -96,7 +103,7 @@ class BookRepository extends ChangeNotifier {
   }
 
   Future<void> removeReview(String livroId, String reviewId) async {
-    final box = Hive.box<Livro>(boxName);
+    final box = await _openBox();
     final livro = box.get(livroId);
     if (livro == null) return;
     livro.avaliacoes?.removeWhere((r) => r.id == reviewId);
