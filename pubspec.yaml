@@ -34,4 +34,4 @@ flutter:
 
   # Registro dos assets (Deve ficar indentado, DENTRO de flutter)
   assets:
-    - assets/Images/logo.png
+    - assets/logo.png

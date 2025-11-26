@@ -17,23 +17,45 @@ class _EditBookPageState extends State<EditBookPage> {
   late TextEditingController _autorController;
   late TextEditingController _generoController;
 
+  AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
+
   @override
   void initState() {
     super.initState();
     _tituloController = TextEditingController(text: widget.livro.titulo);
     _autorController = TextEditingController(text: widget.livro.autor);
     _generoController = TextEditingController(text: widget.livro.genero);
+
+    _tituloController.addListener(_onFormChanged);
+    _autorController.addListener(_onFormChanged);
+    _generoController.addListener(_onFormChanged);
   }
 
   @override
   void dispose() {
+    _tituloController.removeListener(_onFormChanged);
+    _autorController.removeListener(_onFormChanged);
+    _generoController.removeListener(_onFormChanged);
     _tituloController.dispose();
     _autorController.dispose();
     _generoController.dispose();
     super.dispose();
   }
 
+  void _onFormChanged() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _isFormValid {
+    final tituloOk = _tituloController.text.trim().isNotEmpty;
+    final autorOk = _autorController.text.trim().isNotEmpty;
+    final generoOk = _generoController.text.trim().isNotEmpty;
+    return tituloOk && autorOk && generoOk;
+  }
+
   void _salvar() async {
+    setState(() => _autoValidateMode = AutovalidateMode.onUserInteraction);
+
     if (_formKey.currentState!.validate()) {
       final atualizado = Livro(
         id: widget.livro.id,
@@ -72,6 +94,7 @@ class _EditBookPageState extends State<EditBookPage> {
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
+          autovalidateMode: _autoValidateMode,
           child: Column(
             children: [
               TextFormField(
@@ -98,7 +121,7 @@ class _EditBookPageState extends State<EditBookPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _salvar,
+                  onPressed: _isFormValid ? _salvar : null,
                   child: const Text("Salvar"),
                 ),
               ),

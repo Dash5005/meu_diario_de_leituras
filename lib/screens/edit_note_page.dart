@@ -18,6 +18,8 @@ class _EditNotePageState extends State<EditNotePage> {
   late TextEditingController _textoController;
   late TextEditingController _paginaController;
 
+  AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
+
   @override
   void initState() {
     super.initState();
@@ -25,16 +27,35 @@ class _EditNotePageState extends State<EditNotePage> {
     _paginaController = TextEditingController(
       text: widget.anotacao.pagina.toString(),
     );
+
+    _textoController.addListener(_onFormChanged);
+    _paginaController.addListener(_onFormChanged);
   }
 
   @override
   void dispose() {
+    _textoController.removeListener(_onFormChanged);
+    _paginaController.removeListener(_onFormChanged);
     _textoController.dispose();
     _paginaController.dispose();
     super.dispose();
   }
 
+  void _onFormChanged() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _isFormValid {
+    final textoOk = _textoController.text.trim().isNotEmpty;
+    final paginaOk =
+        _paginaController.text.trim().isNotEmpty &&
+        int.tryParse(_paginaController.text.trim()) != null;
+    return textoOk && paginaOk;
+  }
+
   void _salvar() async {
+    setState(() => _autoValidateMode = AutovalidateMode.onUserInteraction);
+
     if (_formKey.currentState!.validate()) {
       final atualizado = Anotacao(
         id: widget.anotacao.id,
@@ -75,6 +96,7 @@ class _EditNotePageState extends State<EditNotePage> {
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
+          autovalidateMode: _autoValidateMode,
           child: Column(
             children: [
               TextFormField(
@@ -89,14 +111,18 @@ class _EditNotePageState extends State<EditNotePage> {
                 controller: _paginaController,
                 keyboardType: TextInputType.number,
                 decoration: _dec("Página"),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Informe a página' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Informe a página';
+                  if (int.tryParse(v.trim()) == null)
+                    return 'Informe um número válido';
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _salvar,
+                  onPressed: _isFormValid ? _salvar : null,
                   child: const Text("Salvar"),
                 ),
               ),
