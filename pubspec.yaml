@@ -22,16 +22,16 @@ dev_dependencies:
   build_runner: ^2.4.6
   flutter_launcher_icons: ^0.13.1
 
-# --- Configuração dos Ícones (Deve ficar na RAIZ, sem espaços à esquerda) ---
+# --- Configuração dos Ícones
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/Images/logo.png" 
+  image_path: "assets/Logo.png" 
 
 # --- Configuração do Flutter ---
 flutter:
   uses-material-design: true
 
-  # Registro dos assets (Deve ficar indentado, DENTRO de flutter)
+  # Registro dos assets 
   assets:
-    - assets/logo.png
+    - assets/Logo.png

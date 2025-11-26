@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+// Imports dos teus arquivos
 import 'repositories/book_repository.dart';
 import 'repositories/theme_provider.dart';
 import 'screens/books_page.dart';
@@ -8,17 +10,21 @@ import 'models/book.dart';
 import 'models/annotation.dart';
 import 'models/review.dart';
 
+// Import da nova tela de Login
+import 'screens/login_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Inicializa o Hive (Essencial para o CRUD funcionar)
   await Hive.initFlutter();
 
+  // Registra os adaptadores
   Hive.registerAdapter(LivroAdapter());
   Hive.registerAdapter(AnotacaoAdapter());
   Hive.registerAdapter(ReviewAdapter());
 
   // Abre box de configurações para evitar flicker ao aplicar o tema salvoawait Hive.openBox('app_settings');
-
   runApp(
     MultiProvider(
       providers: [
@@ -38,6 +44,8 @@ class MeuApp extends StatelessWidget {
       scaffoldBackgroundColor: const Color(0xFFF7F3EC),
       colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4A768A)),
       useMaterial3: true,
+
+      // Textos
       textTheme: const TextTheme(
         titleLarge: TextStyle(
           color: Color(0xFFA66841),
@@ -52,6 +60,8 @@ class MeuApp extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
+
+      //Botões
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF4A768A),
@@ -61,6 +71,8 @@ class MeuApp extends StatelessWidget {
           elevation: 2,
         ),
       ),
+
+      //AppBar
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFFF7F3EC),
         iconTheme: IconThemeData(color: Color(0xFFA66841)),
@@ -69,6 +81,7 @@ class MeuApp extends StatelessWidget {
     );
   }
 
+  // Tema Escuro
   ThemeData _darkTheme() {
     return ThemeData(
       brightness: Brightness.dark,
@@ -78,33 +91,15 @@ class MeuApp extends StatelessWidget {
         brightness: Brightness.dark,
       ),
       useMaterial3: true,
-      textTheme: const TextTheme(
-        titleLarge: TextStyle(
-          color: Color(0xFFE8D8C6),
-          fontWeight: FontWeight.bold,
-        ),
-        titleMedium: TextStyle(
-          color: Color(0xFFE8D8C6),
-          fontWeight: FontWeight.w600,
-        ),
-        titleSmall: TextStyle(
-          color: Color(0xFFE8D8C6),
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2E5A61),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          elevation: 2,
-        ),
-      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF121212),
-        iconTheme: IconThemeData(color: Color(0xFFE8D8C6)),
         elevation: 0,
+      ),
+      // Adicionei configurações para inputs ficarem visíveis no dark mode
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        fillColor: Color(0xFF1E1E1E),
+        border: OutlineInputBorder(),
       ),
     );
   }
@@ -112,13 +107,15 @@ class MeuApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Meu Diário de Leitura',
       theme: _lightTheme(),
       darkTheme: _darkTheme(),
       themeMode: themeProvider.mode,
-      home: const BooksPage(),
+      // AQUI MUDAMOS: A tela inicial agora é o Login!
+      home: const LoginPage(),
     );
   }
 }

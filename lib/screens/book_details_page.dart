@@ -4,6 +4,9 @@ import 'add_note_page.dart';
 import 'add_review_page.dart';
 import '../models/book.dart';
 import '../repositories/book_repository.dart';
+import 'edit_book_page.dart';
+import 'edit_note_page.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BookDetailsPage extends StatelessWidget {
   final Livro livro;
@@ -59,6 +62,17 @@ class BookDetailsPage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Editar Livro',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    EditBookPage(livro: livroAtual), // Navegação que faltava
+              ),
+            ),
+          ),
+          IconButton(
             icon: const Icon(Icons.delete_outline),
             tooltip: 'Excluir Livro',
             onPressed: () => _confirmarExclusao(context, repo),
@@ -101,6 +115,13 @@ class BookDetailsPage extends StatelessWidget {
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           title: Text(a.texto),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  EditNotePage(livro: livroAtual, anotacao: a),
+                            ),
+                          ),
                           subtitle: Text(
                             "Pág ${a.pagina} • ${a.data.toLocal().toString().split(' ')[0]}",
                             style: TextStyle(
