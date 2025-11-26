@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+// Imports de Funcionalidades (Certifica-te que os ficheiros existem)
 import 'add_note_page.dart';
-import 'add_review_page.dart';
+import 'edit_note_page.dart';
+import 'edit_book_page.dart';
+import 'add_review_page.dart'; // <--- Agora vai funcionar com o código acima
+
 import '../models/book.dart';
 import '../repositories/book_repository.dart';
-import 'edit_book_page.dart';
-import 'edit_note_page.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BookDetailsPage extends StatelessWidget {
@@ -27,11 +30,13 @@ class BookDetailsPage extends StatelessWidget {
           TextButton(
             onPressed: () async {
               await repo.removeLivro(livro.id);
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Livro excluído com sucesso!')),
-              );
+              if (context.mounted) {
+                Navigator.pop(ctx);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Livro excluído!')),
+                );
+              }
             },
             child: const Text('Excluir', style: TextStyle(color: Colors.red)),
           ),
@@ -45,6 +50,7 @@ class BookDetailsPage extends StatelessWidget {
     final theme = Theme.of(context);
     final repo = Provider.of<BookRepository>(context);
 
+    // Garante que temos a versão mais recente do livro (Reactive)
     Livro livroAtual;
     try {
       livroAtual = repo.lista.firstWhere((b) => b.id == livro.id);
@@ -58,23 +64,23 @@ class BookDetailsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(livroAtual.titulo, style: theme.textTheme.titleLarge),
+        title: Text(livroAtual.titulo),
         centerTitle: true,
         actions: [
+          // BOTÃO EDITAR LIVRO (Restaurado)
           IconButton(
             icon: const Icon(Icons.edit),
-            tooltip: 'Editar Livro',
+            tooltip: 'Editar informações',
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) =>
-                    EditBookPage(livro: livroAtual), // Navegação que faltava
+                builder: (_) => EditBookPage(livro: livroAtual),
               ),
             ),
           ),
+          // BOTÃO EXCLUIR LIVRO
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            tooltip: 'Excluir Livro',
             onPressed: () => _confirmarExclusao(context, repo),
           ),
         ],
@@ -83,14 +89,13 @@ class BookDetailsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _infoBox(livroAtual.autor, containerColor, theme),
               const SizedBox(height: 12),
               _infoBox(livroAtual.genero, containerColor, theme),
               const SizedBox(height: 20),
 
-              // Notas
+              // --- SEÇÃO DE NOTAS ---
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -104,17 +109,17 @@ class BookDetailsPage extends StatelessWidget {
                     Text("Notas", style: theme.textTheme.titleMedium),
                     const SizedBox(height: 8),
                     if (livroAtual.anotacoes.isEmpty)
-                      Text(
+                      const Text(
                         "Nenhuma anotação ainda.",
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(color: Colors.grey),
                       )
                     else
-                      ...livroAtual.anotacoes.reversed.map((a) {
-                        return ListTile(
+                      for (final a in livroAtual.anotacoes.reversed)
+                        ListTile(
                           contentPadding: EdgeInsets.zero,
                           title: Text(a.texto),
+                          subtitle: Text("Pág ${a.pagina}"),
+                          // Ao clicar na nota, vamos para a edição (Restaurado)
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -122,49 +127,39 @@ class BookDetailsPage extends StatelessWidget {
                                   EditNotePage(livro: livroAtual, anotacao: a),
                             ),
                           ),
-                          subtitle: Text(
-                            "Pág ${a.pagina} • ${a.data.toLocal().toString().split(' ')[0]}",
-                            style: TextStyle(
-                              color: theme.textTheme.bodySmall?.color,
-                            ),
-                          ),
                           trailing: IconButton(
                             icon: Icon(
                               Icons.delete_outline,
                               color: theme.colorScheme.error,
                             ),
-                            onPressed: () {
-                              repo.removeAnotacao(livroAtual.id, a.id);
-                            },
+                            onPressed: () =>
+                                repo.removeAnotacao(livroAtual.id, a.id),
                           ),
-                        );
-                      }),
+                        ),
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
-
               Align(
                 alignment: Alignment.centerRight,
                 child: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AddNotePage(livro: livroAtual),
-                      ),
-                    );
-                  },
-                  backgroundColor: theme.colorScheme.primary,
+                  heroTag:
+                      'add_note', // Evita conflito de animação com outro botão
                   mini: true,
+                  backgroundColor: theme.colorScheme.primary,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddNotePage(livro: livroAtual),
+                    ),
+                  ),
                   child: const Icon(Icons.add, color: Colors.white),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Avaliações
+              // --- SEÇÃO DE AVALIAÇÕES ---
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -178,50 +173,90 @@ class BookDetailsPage extends StatelessWidget {
                     Text("Avaliações", style: theme.textTheme.titleMedium),
                     const SizedBox(height: 8),
                     if (livroAtual.avaliacoes.isEmpty)
-                      Text(
+                      const Text(
                         "Nenhuma avaliação ainda.",
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(color: Colors.grey),
                       )
                     else
-                      ...livroAtual.avaliacoes.reversed.map((r) {
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: CircleAvatar(
-                            backgroundColor: theme.colorScheme.primary,
-                            child: Text(
-                              '${r.nota}',
-                              style: const TextStyle(color: Colors.white),
+                      for (final r in livroAtual.avaliacoes.reversed)
+                        Container(
+                          margin: const EdgeInsets.only(
+                            bottom: 8,
+                          ), // Um pequeno espaço entre avaliações
+                          decoration: BoxDecoration(
+                            color: theme
+                                .cardColor, // Opcional: destaca levemente cada review
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            // AQUI ESTÁ A MUDANÇA PRINCIPAL:
+                            title: Row(
+                              children: [
+                                RatingBarIndicator(
+                                  rating: r.nota
+                                      .toDouble(), // Converte int para double
+                                  itemBuilder: (context, index) => const Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                  ),
+                                  itemCount: 5,
+                                  itemSize:
+                                      20.0, // Tamanho menor para ficar elegante na lista
+                                  direction: Axis.horizontal,
+                                ),
+                                const SizedBox(width: 8),
+                                // Opcional: Mostrar a data formatada simples
+                                Text(
+                                  "${r.data.day}/${r.data.month}/${r.data.year}",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.textTheme.bodySmall?.color
+                                        ?.withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 6.0),
+                              child: Text(
+                                r.comentario.isEmpty
+                                    ? 'Sem comentário.'
+                                    : r.comentario,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                color: theme.colorScheme.error.withOpacity(0.7),
+                                size: 20,
+                              ),
+
+                              onPressed: () =>
+                                  repo.removeReview(livroAtual.id, r.id),
                             ),
                           ),
-                          title: Text(
-                            r.comentario.isEmpty ? '—' : r.comentario,
-                          ),
-                          subtitle: Text(
-                            r.data.toLocal().toString().split(' ')[0],
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(
-                              Icons.delete_outline,
-                              color: theme.colorScheme.error,
-                            ),
-                            onPressed: () {
-                              repo.removeReview(livroAtual.id, r.id);
-                            },
-                          ),
-                        );
-                      }),
+                        ),
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
 
+              // BOTÃO ADICIONAR AVALIAÇÃO (Consertado)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
+                  icon: const Icon(Icons.rate_review_outlined),
+                  label: const Text("Adicionar Avaliação"),
                   onPressed: () {
+                    // Navegação corrigida para a nova página AddReviewPage
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -229,12 +264,9 @@ class BookDetailsPage extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.rate_review_outlined),
-                  label: const Text("Adicionar Avaliação"),
                 ),
               ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
             ],
           ),
         ),
