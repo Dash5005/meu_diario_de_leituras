@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/book.dart';
 import '../repositories/book_repository.dart';
+import '../widgets/custom_text_field.dart';
 
 class EditBookPage extends StatefulWidget {
   final Livro livro;
@@ -18,14 +19,12 @@ class _EditBookPageState extends State<EditBookPage> {
   late TextEditingController _generoController;
 
   AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
-
   @override
   void initState() {
     super.initState();
     _tituloController = TextEditingController(text: widget.livro.titulo);
     _autorController = TextEditingController(text: widget.livro.autor);
     _generoController = TextEditingController(text: widget.livro.genero);
-
     _tituloController.addListener(_onFormChanged);
     _autorController.addListener(_onFormChanged);
     _generoController.addListener(_onFormChanged);
@@ -55,7 +54,6 @@ class _EditBookPageState extends State<EditBookPage> {
 
   void _salvar() async {
     setState(() => _autoValidateMode = AutovalidateMode.onUserInteraction);
-
     if (_formKey.currentState!.validate()) {
       final atualizado = Livro(
         id: widget.livro.id,
@@ -81,9 +79,6 @@ class _EditBookPageState extends State<EditBookPage> {
     }
   }
 
-  InputDecoration _dec(String label) =>
-      InputDecoration(labelText: label, border: const OutlineInputBorder());
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -97,27 +92,27 @@ class _EditBookPageState extends State<EditBookPage> {
           autovalidateMode: _autoValidateMode,
           child: Column(
             children: [
-              TextFormField(
+              CustomTextField(
+                label: "Título",
                 controller: _tituloController,
-                decoration: _dec("Título"),
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Informe o título' : null,
               ),
-              const SizedBox(height: 12),
-              TextFormField(
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: "Autor",
                 controller: _autorController,
-                decoration: _dec("Autor"),
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Informe o autor' : null,
               ),
-              const SizedBox(height: 12),
-              TextFormField(
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: "Gênero",
                 controller: _generoController,
-                decoration: _dec("Gênero"),
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Informe o gênero' : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
