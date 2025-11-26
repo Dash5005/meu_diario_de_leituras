@@ -1,14 +1,14 @@
 # 📚 Diário de Leitura (Reading Diary)
 
-Integrantes do Projeto:
+## Integrantes do Projeto:
 
-Ana Clara da Silva Freitas
+**Ana Clara da Silva Freitas**
 
-Guilherme de Freitas Romão Vieira
+**Guilherme de Freitas Romão Vieira**
 
-João Pedro Alvarado Cardoso
+**João Pedro Alvarado Cardoso**
 
-Bruno Gomes Robim
+**Bruno Gomes Robim**
 
 O **Diário de Leitura** é uma aplicação móvel desenvolvida em Flutter que ajuda os leitores a organizar a sua biblioteca pessoal. O objetivo é permitir que o utilizador registe os seus livros, faça anotações de passagens importantes e avalie as suas leituras, tudo de forma offline e persistente.
 

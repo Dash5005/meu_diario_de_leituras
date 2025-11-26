@@ -39,4 +39,14 @@ class LivroAdapter extends TypeAdapter<Livro> {
       ..writeByte(5)
       ..write(obj.avaliacoes);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LivroAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

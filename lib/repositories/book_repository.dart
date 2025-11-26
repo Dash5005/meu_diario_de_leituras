@@ -39,76 +39,114 @@ class BookRepository extends ChangeNotifier {
   }
 
   Future<void> addLivro(Livro livro) async {
-    final box = await _openBox();
-    await box.put(livro.id, livro);
-    _books = box.values.toList();
-    notifyListeners();
+    try {
+      final box = await _openBox();
+      await box.put(livro.id, livro);
+      _books = box.values.toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Erro: $e');
+      rethrow;
+    }
   }
 
   Future<void> updateLivro(Livro livro) async {
-    final box = await _openBox();
-    await box.put(livro.id, livro);
-    _books = box.values.toList();
-    notifyListeners();
+    try {
+      final box = await _openBox();
+      await box.put(livro.id, livro);
+      _books = box.values.toList();
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> removeLivro(String livroId) async {
-    final box = await _openBox();
-    await box.delete(livroId);
-    _books = box.values.toList();
-    notifyListeners();
+    try {
+      final box = await _openBox();
+      await box.delete(livroId);
+      _books = box.values.toList();
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> addAnotacao(String livroId, Anotacao anotacao) async {
-    final box = await _openBox();
-    final livro = box.get(livroId);
-    if (livro == null) return;
-    livro.anotacoes = (livro.anotacoes ?? [])..add(anotacao);
-    await livro.save();
-    _books = box.values.toList();
-    notifyListeners();
-  }
-
-  Future<void> updateAnotacao(String livroId, Anotacao anotacao) async {
-    final box = await _openBox();
-    final livro = box.get(livroId);
-    if (livro == null) return;
-    final idx = livro.anotacoes.indexWhere((a) => a.id == anotacao.id);
-    if (idx != -1) {
-      livro.anotacoes[idx] = anotacao;
-      await livro.save();
-      _books = box.values.toList();
-      notifyListeners();
+    try {
+      final box = await _openBox();
+      final livro = box.get(livroId);
+      if (livro != null) {
+        livro.anotacoes.add(anotacao);
+        await livro.save();
+        _books = box.values.toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
   Future<void> removeAnotacao(String livroId, String anotacaoId) async {
-    final box = await _openBox();
-    final livro = box.get(livroId);
-    if (livro == null) return;
-    livro.anotacoes?.removeWhere((a) => a.id == anotacaoId);
-    await livro.save();
-    _books = box.values.toList();
-    notifyListeners();
+    try {
+      final box = await _openBox();
+      final livro = box.get(livroId);
+      if (livro != null) {
+        livro.anotacoes.removeWhere((a) => a.id == anotacaoId);
+        await livro.save();
+        _books = box.values.toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateAnotacao(String livroId, Anotacao anotacao) async {
+    try {
+      final box = await _openBox();
+      final livro = box.get(livroId);
+      if (livro != null) {
+        final idx = livro.anotacoes.indexWhere((a) => a.id == anotacao.id);
+        if (idx != -1) {
+          livro.anotacoes[idx] = anotacao;
+          await livro.save();
+          _books = box.values.toList();
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> addReview(String livroId, Review review) async {
-    final box = await _openBox();
-    final livro = box.get(livroId);
-    if (livro == null) return;
-    livro.avaliacoes = (livro.avaliacoes ?? [])..add(review);
-    await livro.save();
-    _books = box.values.toList();
-    notifyListeners();
+    try {
+      final box = await _openBox();
+      final livro = box.get(livroId);
+      if (livro != null) {
+        livro.avaliacoes.add(review);
+        await livro.save();
+        _books = box.values.toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> removeReview(String livroId, String reviewId) async {
-    final box = await _openBox();
-    final livro = box.get(livroId);
-    if (livro == null) return;
-    livro.avaliacoes?.removeWhere((r) => r.id == reviewId);
-    await livro.save();
-    _books = box.values.toList();
-    notifyListeners();
+    try {
+      final box = await _openBox();
+      final livro = box.get(livroId);
+      if (livro != null) {
+        livro.avaliacoes.removeWhere((r) => r.id == reviewId);
+        await livro.save();
+        _books = box.values.toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 }

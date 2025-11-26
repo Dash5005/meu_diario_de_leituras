@@ -33,4 +33,14 @@ class ReviewAdapter extends TypeAdapter<Review> {
       ..writeByte(3)
       ..write(obj.data);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReviewAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

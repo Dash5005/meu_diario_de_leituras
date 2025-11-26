@@ -33,4 +33,14 @@ class AnotacaoAdapter extends TypeAdapter<Anotacao> {
       ..writeByte(3)
       ..write(obj.data);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AnotacaoAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }
