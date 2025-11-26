@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
+
 import '../models/review.dart';
 import '../models/book.dart';
 import '../repositories/book_repository.dart';
@@ -13,7 +15,8 @@ class AddReviewPage extends StatefulWidget {
 }
 
 class _AddReviewPageState extends State<AddReviewPage> {
-  final _notaController = TextEditingController();
+  // O _notaController por uma variável double
+  double _rating = 3;
   final _comentController = TextEditingController();
 
   AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
@@ -21,15 +24,12 @@ class _AddReviewPageState extends State<AddReviewPage> {
   @override
   void initState() {
     super.initState();
-    _notaController.addListener(_onFormChanged);
     _comentController.addListener(_onFormChanged);
   }
 
   @override
   void dispose() {
-    _notaController.removeListener(_onFormChanged);
     _comentController.removeListener(_onFormChanged);
-    _notaController.dispose();
     _comentController.dispose();
     super.dispose();
   }
@@ -38,25 +38,12 @@ class _AddReviewPageState extends State<AddReviewPage> {
     if (mounted) setState(() {});
   }
 
-  bool get _isNotaValid {
-    final nota = int.tryParse(_notaController.text.trim());
-    return nota != null && nota >= 1 && nota <= 5;
-  }
-
   Future<void> _enviar() async {
     setState(() => _autoValidateMode = AutovalidateMode.onUserInteraction);
 
-    final nota = int.tryParse(_notaController.text.trim());
-    if (nota == null || nota < 1 || nota > 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informe uma nota entre 1 e 5')),
-      );
-      return;
-    }
-
     final review = Review(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      nota: nota,
+      nota: _rating.toInt(),
       comentario: _comentController.text.trim(),
       data: DateTime.now(),
     );
@@ -78,7 +65,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao adicionar avaliação: $e')),
+        SnackBar(
+          content: Text('Erro ao adicionar avaliação: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -96,43 +86,44 @@ class _AddReviewPageState extends State<AddReviewPage> {
         title: Text("Adicionar Avaliação", style: theme.textTheme.titleLarge),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
+        // SingleChildScrollView para evitar overflow em telas pequenas
         padding: const EdgeInsets.all(16),
         child: Form(
           autovalidateMode: _autoValidateMode,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TextFormField(
-                controller: _notaController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: 'Nota (1-5)',
-                  filled: true,
-                  fillColor: const Color(0xFFF1F4FA),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+              Text(
+                "Sua nota",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-                validator: (value) {
-                  final n = int.tryParse(value?.trim() ?? '');
-                  if (n == null || n < 1 || n > 5) {
-                    return 'Informe uma nota entre 1 e 5';
-                  }
-                  return null;
+              ),
+              const SizedBox(height: 8),
+              RatingBar.builder(
+                initialRating: _rating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: false,
+                itemCount: 5,
+                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                itemBuilder: (context, _) =>
+                    const Icon(Icons.star, color: Colors.amber),
+                onRatingUpdate: (rating) {
+                  setState(() {
+                    _rating = rating;
+                  });
                 },
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 24),
+
               TextFormField(
                 controller: _comentController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: "Comentário",
+                  hintText: "Escreva seu comentário aqui...",
                   filled: true,
                   fillColor: const Color(0xFFF1F4FA),
                   contentPadding: const EdgeInsets.symmetric(
@@ -149,7 +140,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isNotaValid ? _enviar : null,
+                  onPressed: _enviar,
                   child: const Text(
                     'Enviar Avaliação',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
